@@ -1,11 +1,10 @@
-# Companies Layoffs Analysis
+# Companies Layoffs Analysis - Data Cleaning
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Data Source](#data-source)
 - [Data Cleaning](#data-cleaning)
-- [Exploratory Data Analysis](#exploratory-data-analysis)
 
 ### Project Overview
 
@@ -13,7 +12,7 @@ This data analysis aims to identify trends on companies layoffs around the world
 
 ### Data Source
 
-The dataset used for this project is 'layoffs.csv', you can download it [here.](https://microsoft.com)
+The dataset used for this project is 'layoffs.csv', you can download it [here.](layoffs.csv)
 
 ### Data Cleaning
 1. Remove duplicates
