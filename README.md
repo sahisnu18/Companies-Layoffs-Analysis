@@ -201,10 +201,4 @@ ALTER TABLE layoffs_staging2
 DROP COLUMN row_num;
 SELECT*FROM layoffs_staging2;
 ```
-### Exploratory Data Analysis
-EDA involved exploring the layoffs data to answer questions, such as:
-- Which company had the most employee laid off?
-- Which company whose laid off all of its employee?
-- What is the total employees laid off through the year?
-- What is the trend of employees laid off each month?
 
