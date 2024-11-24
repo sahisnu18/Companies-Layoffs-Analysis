@@ -8,7 +8,7 @@
 
 ### Project Overview
 
-This data analysis aims to identify trends on companies layoffs around the world during covid pandemic from March 2020 to March 2023
+This data analysis aims to clean the data and present the output properly so we can do exploratory data analysis in the next step.
 
 ### Data Source
 
@@ -151,6 +151,7 @@ SELECT DISTINCT country, trim(trailing '.' FROM country) FROM layoffs_staging2 o
 UPDATE layoffs_staging2 SET country = trim(trailing '.' FROM country) WHERE country LIKE 'United States%';
 ```
 Currently 'date' showing as 'TEXT' data type, the format is not good for time series data analysis, so we need to change that format
+
 <img width="113" alt="{A53573E7-3452-4F71-AACE-E0B966426201}" src="https://github.com/user-attachments/assets/07148c03-d028-4253-9c3c-b0256acdd71c">
 
 <img width="184" alt="{0D866BF7-FD66-4310-9620-72D027E15A42}" src="https://github.com/user-attachments/assets/96f31690-c67d-4ea9-9fc5-7eee2147e838">
