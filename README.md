@@ -36,7 +36,7 @@ Identifying Duplicates
 
 > Because we don't have unique row ID in our data,
 We use row number so we can see if the row_num is greater than one row, it means it is duplicated.
-```
+```sql
 WITH duplicate_cte AS
 (
 SELECT*,
@@ -50,7 +50,7 @@ WHERE row_num > 1;
 ![Check Duplicates](https://github.com/user-attachments/assets/3e9bb214-7b63-4fed-a87d-64749f654fff)
 
 > Check the duplicates, in this case we pick company name 'Oda'
-```
+```sql
 SELECT*FROM layoffs_staging WHERE company = 'Oda';
 ```
 ![Check Duplicates 2](https://github.com/user-attachments/assets/187e88db-48d5-421f-bb62-9d07b730db9f)
@@ -59,7 +59,7 @@ SELECT*FROM layoffs_staging WHERE company = 'Oda';
 
 
 > Correction of the previous query after we included every single column.
-```
+```sql
 WITH duplicate_cte AS
 (
 SELECT*,
@@ -74,7 +74,7 @@ After we checked the data that duplicates, we need to delete it.
 >  But, in MySQL you cannot update a CTE, the workaround is to create another staging table, copy the data, filter the row_num greater than 1, then delete the duplicates.
 
 > Use create statement to create a table, then insert 'row_num' column as 'INT'
-```
+```sql
 CREATE TABLE `layoffs_staging2` (
   `company` text,
   `location` text,
@@ -89,7 +89,7 @@ CREATE TABLE `layoffs_staging2` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 After creating table 'layoffs_staging2', we insert data from 'layoffs_staging'
-```
+```sql
 INSERT INTO layoffs_staging2
 SELECT*,
 ROW_NUMBER() OVER(
@@ -97,7 +97,7 @@ PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `
 FROM layoffs_staging;
 ```
 Then DELETE the data where the row number is greater than 1, which indicates it is duplicated
-```
+```sql
 DELETE from layoffs_staging2
 WHERE row_num > 1;
 ```
@@ -109,7 +109,7 @@ Formatting
 > There's a space in front of the companies name, we need to trim it
 <img width="176" alt="{73630705-F3CD-49FA-B566-70488E424A51}" src="https://github.com/user-attachments/assets/c0ecb85a-26fd-48a0-9f86-23749faf66ce">
 
-```
+```sql
 SELECT company, TRIM(company)
 FROM layoffs_staging2;
 
@@ -119,26 +119,26 @@ SET company = trim(company);
 > Check table industry, some industry mention couple times, even though its the same meaning. Also there's a blank and null, need to get rid of that.
 <img width="141" alt="{2F6A0C79-FA37-465D-ABA1-D0556BBE2076}" src="https://github.com/user-attachments/assets/50fa3175-4c65-40aa-bc5c-b866a0a9f7f9">
 
-```
+```sql
 SELECT distinct industry from layoffs_staging2
 ORDER BY 1;
 ```
 > Check further, for example, the crypto industry, to see if there are multiple names with the same meaning
-```
+```sql
 SELECT*FROM layoffs_staging2
 WHERE industry LIKE 'Crypto%';
 ```
 <img width="763" alt="{5F062FFC-3A90-4DEC-B83D-39ACB32EECB0}" src="https://github.com/user-attachments/assets/1c1b9d05-07bc-4269-9205-b7550009d915">
 
 Remove other than Crypto industry.
-```
+```sql
 UPDATE layoffs_staging2
 SET industry = 'Crypto'
 WHERE industry LIKE 'Crypto%';
 ```
 
 > Check table country, there's two United States
-```
+```sql
 SELECT DISTINCT country FROM layoffs_staging2 ORDER BY country;
 ```
 <img width="129" alt="{9CE9AABF-9FC6-4DB9-9F0E-014F7DCB6DFC}" src="https://github.com/user-attachments/assets/4ef67d02-7a87-4b2b-b4a1-9d279ca6242f">
@@ -146,7 +146,7 @@ SELECT DISTINCT country FROM layoffs_staging2 ORDER BY country;
 > To remove the dot, we can use trailing
 <img width="272" alt="{EA1A28AC-45DC-4089-8C89-940DDAC68A3F}" src="https://github.com/user-attachments/assets/8fa99f9e-a4de-4333-aa6a-ce5933a98571">
 
-```
+```sql
 SELECT DISTINCT country, trim(trailing '.' FROM country) FROM layoffs_staging2 order by country;
 UPDATE layoffs_staging2 SET country = trim(trailing '.' FROM country) WHERE country LIKE 'United States%';
 ```
@@ -156,7 +156,7 @@ Currently 'date' showing as 'TEXT' data type, the format is not good for time se
 
 <img width="184" alt="{0D866BF7-FD66-4310-9620-72D027E15A42}" src="https://github.com/user-attachments/assets/96f31690-c67d-4ea9-9fc5-7eee2147e838">
 
-```
+```sql
 SELECT `date`, str_to_date(`date`, '%m/%d/%Y') FROM layoffs_staging2;
 UPDATE layoffs_staging2 SET `date` = str_to_date(`date`, '%m/%d/%Y');
 ALTER TABLE layoffs_staging2 modify column `date` DATE;
@@ -170,12 +170,12 @@ For example airbnb actually have industry, but there is one that dont have indus
 <img width="711" alt="{19C7CC7B-9D18-4F3B-972A-4E4E6A9C64DB}" src="https://github.com/user-attachments/assets/e847db78-cf10-4eda-bbd3-9527807bc6d6">
 
 > What i'm trying to do is, if we're trying to look at which industry were impacted the most, the blank row won't be in our output, and the result will be invalid because of miscalculated.
-```
+```sql
 SELECT * FROM layoffs_staging2 WHERE industry IS NULL or industry = '';
 SELECT * FROM layoffs_staging2 WHERE company = 'Airbnb';
 ```
 To populate or update the same data into the other industry column, we are going to join the table itself to fill in the 'blank' with the same value that has 'industry'
-```
+```sql
 -- Remove the blank first, because it cause an error
 UPDATE layoffs_staging2 SET industry = NULL where industry = '';
 
@@ -190,13 +190,13 @@ JOIN layoffs_staging2 t2
 
 #### Remove any columns, rows, or data that aren't necessary
 > Some of the companies didn't have data about how many they laid off, so we can delete that
-```
+```sql
 DELETE FROM layoffs_staging2
 WHERE total_laid_off is null
 AND percentage_laid_off is null;
 ```
 > Lastly, we want to drop the row_num column because we didn't need it anymore after we cleanup the duplicates
-```
+```sql
 ALTER TABLE layoffs_staging2
 DROP COLUMN row_num;
 SELECT*FROM layoffs_staging2;
